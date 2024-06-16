@@ -8,20 +8,50 @@ import upgrade2Pro from './assets/rocket.svg'
 import sendIcon from './assets/send.svg'
 import userIcon from './assets/user-icon.png'
 import logoText from './assets/logoText.png'
+import { useContext, useState } from 'react'
+import { Context } from './context/context'
 
 function App() {
+
+  const [mode, setMode] = useState('dark');
+
+  const { prevPrompts,
+    setPrevPrompts,
+    onSent,
+    setRecentPrompt,
+    recentPrompt,
+    showResult,
+    loading,
+    resultData,
+    input,
+    setInput,
+    newChat } = useContext(Context)
+
+  const loadPrompt = async (prompt) => {
+    setRecentPrompt(prompt)
+    await onSent(prompt)
+  }
+
+  const toggelMode = () => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  }
+
   return (
-    <div className="App">
+    <div className={`App ${mode}`}>
       <div className='sidebar'>
         <div className='upperSide'>
           <div className='upperSideTop'>
             <img src={cogniCraftLogo} alt="cogniCraftLogo" className="logo" /> <span className="brand">CogniCraft</span>
           </div>
-          <button className="midBtn"><img src={addBtn} alt="new chat" className="addBtn" />New Chat</button>
+          <button className="midBtn" onClick={() => newChat()}><img src={addBtn} alt="new chat" className="addBtn" />New Chat</button>
           <div className="upperSideBottom">
-            <button className="query"><img src={messageIcon} alt="" />What is Software Engineering?</button>
-            <button className="query"><img src={messageIcon} alt="" />Tips for presentation?</button>
+            {prevPrompts.slice().reverse().map((item, index) => {
+              return (
+                <button key={index} className="query" onClick={() => loadPrompt(item)}><img src={messageIcon} alt="" />{item.slice(0, 18)}</button>
+              )
+            })}
           </div>
+
         </div>
         <div className='lowerSide'>
           <div className="listItems"><img src={homeIcon} alt="Home" className="listItemsImg" />Home</div>
@@ -30,20 +60,44 @@ function App() {
         </div>
       </div>
       <div className='main'>
-        <div className="chats">
-          <div className="chat">
-            <img className='chatImg' src={userIcon} alt="" />
-            <p className="txt">Lorem ipsum dolor sit amet consectetur adipisicing elit. Ratione aliquam voluptas voluptatem rerum ipsam cum natus nesciunt alias fugiat tenetur.</p>
-          </div>
-          <div className="chat bot">
-            <img className='chatImg' src={logoText} alt="" />
-            <p className="txt">Lorem ipsum dolor sit amet consectetur adipisicing elit. Iste in ipsa earum harum cupiditate beatae at aliquid repellat sequi porro maiores, blanditiis ab perferendis aperiam, quam sapiente magni nemo molestias perspiciatis voluptatem fugiat, obcaecati labore aut quisquam. Tenetur, minima? Aliquam quo quasi maiores eaque omnis velit fugiat dolores cumque fuga suscipit alias dolorem nobis nemo, esse repellendus consequuntur sapiente rem, ipsam unde! Esse ut quibusdam quidem, ea, fugit et dicta officia vitae, natus numquam quod tenetur quia. Distinctio ea dolorum laudantium aspernatur asperiores, saepe a unde et velit commodi, consequuntur, autem recusandae. Rem, laborum. Esse beatae enim fuga quia delectus.</p>
-          </div>
+
+        <div className="btn" onClick={toggelMode}>
+          {mode === 'dark'
+            ? <p>Dart</p>
+            : <p>Light</p>}
         </div>
+
+        {!showResult
+          ? <>
+            <div className="chats">
+            </div>
+          </>
+          : <div className='result'>
+            <div className="resultTitle">
+              <img src={userIcon} alt="" className='resultImg' />
+              <p className="txt">{recentPrompt}</p>
+            </div>
+            <div className="resultTitle data">
+              <img src={cogniCraftLogo} alt="" className='chatLogo' />
+              {loading
+                ? <div className='loader'>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+                  <div></div>
+
+                </div>
+                : <p dangerouslySetInnerHTML={{ __html: resultData }} className="txt"></p>
+              }
+            </div>
+          </div>
+
+        }
+
         <div className="chatFooter">
           <div className="input">
-            <input type="text" placeholder='Send a message...'/>
-            <button className="send"><img src={sendIcon} alt="send" /></button>
+            <input type="text" placeholder='Send a message...' onChange={(e) => setInput(e.target.value)} value={input} />
+            <button className="send" onClick={() => onSent()}><img src={sendIcon} alt="send" /></button>
           </div>
           <p>CogniCraft may produce inaccurate information about people, places, or facts. CogniCraft June 20 Version.</p>
         </div>
@@ -53,3 +107,5 @@ function App() {
 }
 
 export default App;
+
+
